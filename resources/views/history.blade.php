@@ -26,7 +26,7 @@
             <table class="w-full text-left">
                 <thead class="bg-gray-100 border-b-2 border-gray-200">
                     <tr>
-                        <th class="p-4 text-sm font-semibold text-gray-600">#</th>
+                        <th class="p-4 text-sm font-semibold text-gray-600">No.</th>
                         <th class="p-4 text-sm font-semibold text-gray-600">Jenis Olahraga</th>
                         <th class="p-4 text-sm font-semibold text-gray-600">Durasi (Menit)</th>
                         <th class="p-4 text-sm font-semibold text-gray-600">Berat (Kg)</th>
@@ -37,7 +37,7 @@
                 <tbody>
                     @forelse($histories as $history)
                         <tr class="hover:bg-orange-50 transition duration-200 border-b border-gray-200">
-                            <td class="p-4 text-gray-700">{{ $loop->iteration }}</td>
+                            <td class="p-4 text-gray-700 w-16">{{ $loop->iteration }}.</td>
                             <td class="p-4 text-gray-700">{{ $history->sport_name }}</td>
                             <td class="p-4 text-gray-700">{{ $history->duration_minutes }}</td>
                             <td class="p-4 text-gray-700">{{ $history->weight_kg }}</td>

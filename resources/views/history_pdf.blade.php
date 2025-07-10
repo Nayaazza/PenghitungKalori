@@ -30,9 +30,7 @@
 
         th {
             background-color: #FFF3E0;
-            /* Kuning muda, senada dengan tema */
             color: #FF8C00;
-            /* Oranye tua untuk teks header */
             text-transform: uppercase;
             font-size: 10px;
         }
@@ -43,7 +41,6 @@
 
         h1 {
             color: #FF8C00;
-            /* Oranye tua */
             text-align: center;
             font-size: 22px;
             margin-bottom: 5px;
@@ -76,7 +73,7 @@
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th style="width: 40px;">No.</th>
                 <th>Jenis Olahraga</th>
                 <th>Durasi (Menit)</th>
                 <th>Berat Badan (Kg)</th>
@@ -87,7 +84,7 @@
         <tbody>
             @forelse($histories as $history)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $loop->iteration }}.</td>
                     <td>{{ $history->sport_name }}</td>
                     <td>{{ $history->duration_minutes }}</td>
                     <td>{{ $history->weight_kg }}</td>

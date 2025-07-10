@@ -1,4 +1,5 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
+import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -10,22 +11,11 @@ export default {
 
     theme: {
         extend: {
-            colors: {
-                // Palet warna tema kuning-oranye
-                primary: {
-                    light: '#FFD6A5', // Kuning muda
-                    DEFAULT: '#FFA500', // Oranye
-                    dark: '#FF8C00', // Oranye tua
-                },
-                secondary: '#4A5568', // Abu-abu untuk teks
-                light: '#F7FAFC',    // Latar belakang kartu
-            },
             fontFamily: {
-                // Menggunakan font yang sudah ada di proyek Anda
-                sans: ['"Instrument Sans"', ...defaultTheme.fontFamily.sans],
+                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
         },
     },
 
-    plugins: [],
+    plugins: [forms],
 };
