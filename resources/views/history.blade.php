@@ -8,7 +8,8 @@
             <h1 class="text-4xl font-bold text-gray-800">Riwayat Perhitungan</h1>
             <p class="text-lg text-gray-600 mt-1">Berikut adalah daftar perhitungan kalori yang pernah Anda lakukan.</p>
         </div>
-        <a href="{{ route('calculator.download.pdf') }}"
+        {{-- Tombol download sekarang mengambil filter dari URL --}}
+        <a href="{{ route('calculator.download.pdf', request()->query()) }}"
             class="mt-4 md:mt-0 inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="mr-2"
                 viewBox="0 0 16 16">
@@ -19,6 +20,41 @@
             </svg>
             Download PDF
         </a>
+    </div>
+
+    <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg mb-8">
+        <form action="{{ route('calculator.history') }}" method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label for="sport_name" class="block text-sm font-medium text-gray-700">Jenis Olahraga</label>
+                    <select id="sport_name" name="sport_name"
+                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
+                        <option value="">Semua Olahraga</option>
+                        @foreach ($sports as $sport)
+                            <option value="{{ $sport->name }}"
+                                {{ request('sport_name') == $sport->name ? 'selected' : '' }}>
+                                {{ $sport->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700">Tanggal</label>
+                    <input type="date" name="date" id="date" value="{{ request('date') }}"
+                        class="mt-1 focus:ring-orange-500 focus:border-orange-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit"
+                        class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        Filter
+                    </button>
+                    <a href="{{ route('calculator.history') }}"
+                        class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
 
     <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
