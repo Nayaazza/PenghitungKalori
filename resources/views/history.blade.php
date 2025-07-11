@@ -8,9 +8,8 @@
             <h1 class="text-4xl font-bold text-gray-800">Riwayat Perhitungan</h1>
             <p class="text-lg text-gray-600 mt-1">Berikut adalah daftar perhitungan kalori yang pernah Anda lakukan.</p>
         </div>
-        {{-- Tombol download sekarang mengambil filter dari URL --}}
         <a href="{{ route('calculator.download.pdf', request()->query()) }}"
-            class="mt-4 md:mt-0 inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105">
+            class="mt-4 md:mt-0 inline-flex items-center px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-md transition-colors duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="mr-2"
                 viewBox="0 0 16 16">
                 <path
@@ -90,5 +89,8 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="mt-6">
+        {{ $histories->links() }}
     </div>
 @endsection

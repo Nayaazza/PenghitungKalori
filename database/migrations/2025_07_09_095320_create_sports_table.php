@@ -6,23 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('sports', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Nama olahraga, contoh: Berlari
-            $table->float('met_value'); // Nilai MET (Metabolic Equivalent of Task)
-            $table->string('image_url'); // URL gambar untuk FR02
+            $table->string('name');
+            $table->float('met_value');
+            // MENGGANTI image_url DENGAN icon_svg
+            $table->text('icon_svg')->nullable(); // Menggunakan TEXT untuk kode SVG
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sports');

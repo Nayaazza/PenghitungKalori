@@ -2,48 +2,45 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Sport;
 
 class SportSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Data awal untuk jenis olahraga (FR01)
+        Sport::truncate(); // Mengosongkan tabel untuk data baru
+
         $sports = [
             [
                 'name' => 'Berlari (5 mph)',
                 'met_value' => 8.3,
-                'image_url' => 'https://placehold.co/600x400/a3e635/3f6212?text=Berlari'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12.75 4.5a.75.75 0 01.75.75v8.25a.75.75 0 01-1.5 0V5.25a.75.75 0 01.75-.75zM12.75 18a.75.75 0 100-1.5.75.75 0 000 1.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6.375 4.5a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zM9.375 4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V5.25a.75.75 0 01.75-.75z" />'
             ],
             [
                 'name' => 'Berenang (Gaya Bebas)',
                 'met_value' => 7.0,
-                'image_url' => 'https://placehold.co/600x400/67e8f9/0e7490?text=Berenang'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0zm-2.25-1.5a.375.375 0 00-.499.052l-2.25 3.375a.375.375 0 00.548.423l2.25-1.538a.375.375 0 00-.05-.51z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" />'
             ],
             [
                 'name' => 'Bersepeda (10-12 mph)',
                 'met_value' => 6.0,
-                'image_url' => 'https://placehold.co/600x400/fde047/854d0e?text=Bersepeda'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM11.25 6H12.75a1.5 1.5 0 010 3H11.25z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75L12 15" />'
             ],
             [
                 'name' => 'Yoga',
                 'met_value' => 2.5,
-                'image_url' => 'https://placehold.co/600x400/c4b5fd/4c1d95?text=Yoga'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v.01a6 6 0 01-5.84-7.38l5.84-11.68 5.84 11.68z" />'
             ],
             [
                 'name' => 'Angkat Beban',
                 'met_value' => 3.0,
-                'image_url' => 'https://placehold.co/600x400/fca5a5/991b1b?text=Angkat+Beban'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 3.75h15M4.5 12h15m-7.5-8.25v16.5" />'
             ],
             [
                 'name' => 'Berjalan Kaki (3 mph)',
                 'met_value' => 3.5,
-                'image_url' => 'https://placehold.co/600x400/fdba74/9a3412?text=Jalan+Kaki'
+                'icon_svg' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75l-3.75 3.75-3.75-3.75" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75v-6" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-2.25" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 18.75h6" />'
             ],
         ];
 

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Models\Sport;
-use App\Models\CalculationHistory;
+use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CalculationHistory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CalorieController extends Controller
@@ -18,14 +19,46 @@ class CalorieController extends Controller
         return view('calculator', compact('sports'));
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
-        $stats = CalculationHistory::where('user_id', $user->id)->select(DB::raw('SUM(calories_burned) as total_calories'), DB::raw('SUM(duration_minutes) as total_duration'))->first();
-        $recentHistories = CalculationHistory::where('user_id', $user->id)->latest()->take(3)->get();
-        return view('dashboard', ['user' => $user, 'stats' => $stats, 'recentHistories' => $recentHistories,]);
+        $period = $request->input('period', 'all'); // Default ke 'semua'
+
+        $query = CalculationHistory::where('user_id', $user->id);
+
+        // Terapkan filter periode waktu pada query
+        switch ($period) {
+            case 'daily':
+                $query->whereDate('created_at', today());
+                break;
+            case 'weekly':
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'monthly':
+                $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                break;
+        }
+
+        // Ambil statistik berdasarkan query yang sudah difilter
+        $stats = (clone $query)->select(
+            DB::raw('SUM(calories_burned) as total_calories'),
+            DB::raw('SUM(duration_minutes) as total_duration')
+        )
+            ->first();
+
+        // Ambil 5 riwayat terakhir (tidak terpengaruh filter periode)
+        $recentHistories = CalculationHistory::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('dashboard', [
+            'stats' => $stats,
+            'recentHistories' => $recentHistories,
+            'period' => $period,
+        ]);
     }
-    
+
     public function calculate(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -41,12 +74,12 @@ class CalorieController extends Controller
         $sport = Sport::find($request->sport_id);
         $duration = $request->duration;
         $weight = $request->weight;
-        
+
         $caloriesBurned = ($sport->met_value * $weight * 3.5) / 200 * $duration;
 
         if (Auth::check()) {
             CalculationHistory::create([
-                'user_id' => Auth::id(), 
+                'user_id' => Auth::id(),
                 'sport_name' => $sport->name,
                 'duration_minutes' => $duration,
                 'weight_kg' => $weight,
@@ -79,7 +112,7 @@ class CalorieController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        $histories = $query->latest()->get();
+        $histories = $query->latest()->paginate(10)->withQueryString();
 
         // Ambil daftar olahraga unik untuk dropdown filter
         $sports = Sport::orderBy('name')->get();
