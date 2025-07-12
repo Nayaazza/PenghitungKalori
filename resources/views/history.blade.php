@@ -72,11 +72,13 @@
                 <tbody>
                     @forelse($histories as $history)
                         <tr class="hover:bg-orange-50 transition duration-200 border-b border-gray-200">
-                            <td class="p-4 text-gray-700 w-16">{{ $loop->iteration }}.</td>
+                            <td class="p-4 text-gray-700 w-16">
+                                {{ ($histories->currentPage() - 1) * $histories->perPage() + $loop->iteration }}.</td>
                             <td class="p-4 text-gray-700">{{ $history->sport_name }}</td>
                             <td class="p-4 text-gray-700">{{ $history->duration_minutes }}</td>
                             <td class="p-4 text-gray-700">{{ $history->weight_kg }}</td>
-                            <td class="p-4 text-orange-600 font-bold">{{ $history->calories_burned }}</td>
+                            <td class="p-4 text-orange-600 font-bold">{{ number_format($history->calories_burned, 2) }}
+                            </td>
                             <td class="p-4 text-sm text-gray-500">{{ $history->created_at->format('d M Y, H:i') }}</td>
                         </tr>
                     @empty
@@ -90,7 +92,9 @@
             </table>
         </div>
     </div>
+
+    {{-- Menggunakan pagination kustom --}}
     <div class="mt-6">
-        {{ $histories->links() }}
+        {{ $histories->links('vendor.pagination.custom-pagination') }}
     </div>
 @endsection
