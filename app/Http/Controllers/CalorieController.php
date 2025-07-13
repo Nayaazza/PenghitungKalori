@@ -15,7 +15,6 @@ class CalorieController extends Controller
 {
     public function index()
     {
-        // Mengambil data olahraga dan mengurutkannya berdasarkan nama
         $sports = Sport::orderBy('name', 'asc')->get();
         return view('calculator', compact('sports'));
     }
@@ -23,40 +22,128 @@ class CalorieController extends Controller
     public function dashboard(Request $request)
     {
         $user = Auth::user();
-        $period = $request->input('period', 'all'); // Default ke 'semua'
+        $period = $request->input('period', 'weekly'); // Default ke mingguan
 
-        $query = CalculationHistory::where('user_id', $user->id);
+        // Query dasar untuk statistik utama
+        $statsQuery = CalculationHistory::where('user_id', $user->id);
 
-        // Terapkan filter periode waktu pada query
+        // Terapkan filter periode untuk statistik utama (Total Kalori & Durasi)
         switch ($period) {
             case 'daily':
-                $query->whereDate('created_at', today());
+                $statsQuery->whereDate('created_at', today());
                 break;
             case 'weekly':
-                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                $statsQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
                 break;
             case 'monthly':
-                $query->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+                $statsQuery->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
                 break;
         }
 
-        // Ambil statistik berdasarkan query yang sudah difilter
-        $stats = (clone $query)->select(
+        $stats = (clone $statsQuery)->select(
             DB::raw('SUM(calories_burned) as total_calories'),
             DB::raw('SUM(duration_minutes) as total_duration')
-        )
-            ->first();
+        )->first();
 
-        // Ambil 5 riwayat terakhir (tidak terpengaruh filter periode)
-        $recentHistories = CalculationHistory::where('user_id', $user->id)
-            ->latest()
-            ->take(5)
-            ->get();
+        // --- STATISTIK TAMBAHAN (selalu 'semua waktu') ---
+        $allTimeQuery = CalculationHistory::where('user_id', $user->id);
+        $favoriteSport = (clone $allTimeQuery)->select('sport_name', DB::raw('count(*) as count'))->groupBy('sport_name')->orderByDesc('count')->first();
+        $topActivity = (clone $allTimeQuery)->orderByDesc('calories_burned')->first();
+
+        // --- PERSIAPAN DATA GRAFIK DINAMIS ---
+        $chartTitle = 'Aktivitas';
+        $chartLabels = [];
+        $chartValues = [];
+
+        switch ($period) {
+            case 'daily':
+                $chartTitle = 'Aktivitas Hari Ini (per Jam)';
+                $chartData = CalculationHistory::where('user_id', $user->id)
+                    ->whereDate('created_at', today())
+                    ->groupBy('hour')
+                    ->orderBy('hour', 'asc')
+                    ->get([
+                        DB::raw('HOUR(created_at) as hour'),
+                        DB::raw('SUM(calories_burned) as total_calories')
+                    ])->pluck('total_calories', 'hour');
+                for ($hour = 0; $hour < 24; $hour++) {
+                    $chartLabels[] = str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00';
+                    $chartValues[] = $chartData[$hour] ?? 0;
+                }
+                break;
+
+            case 'monthly':
+                $chartTitle = 'Aktivitas Bulan Ini (per Hari)';
+                $daysInMonth = now()->daysInMonth;
+                $chartData = CalculationHistory::where('user_id', $user->id)
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->groupBy('day')
+                    ->orderBy('day', 'asc')
+                    ->get([
+                        DB::raw('DAY(created_at) as day'),
+                        DB::raw('SUM(calories_burned) as total_calories')
+                    ])->pluck('total_calories', 'day');
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $chartLabels[] = $day;
+                    $chartValues[] = $chartData[$day] ?? 0;
+                }
+                break;
+
+            case 'all':
+                $chartTitle = 'Ringkasan 12 Bulan Terakhir';
+                $chartData = CalculationHistory::where('user_id', $user->id)
+                    ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+                    ->select(
+                        DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                        DB::raw('SUM(calories_burned) as total_calories')
+                    )
+                    ->groupBy('month')
+                    ->orderBy('month', 'asc')
+                    ->get()->pluck('total_calories', 'month');
+
+                for ($i = 11; $i >= 0; $i--) {
+                    $date = now()->subMonths($i);
+                    $monthKey = $date->format('Y-m');
+                    $chartLabels[] = $date->translatedFormat('M Y');
+                    $chartValues[] = $chartData[$monthKey] ?? 0;
+                }
+                break;
+
+            case 'weekly':
+            default:
+                $chartTitle = 'Aktivitas Minggu Ini (per Hari)';
+                $chartData = CalculationHistory::where('user_id', $user->id)
+                    ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+                    ->groupBy('day')
+                    ->orderBy('day', 'asc')
+                    ->get([
+                        DB::raw('DAYOFWEEK(created_at) as day'), // 1=Minggu, 2=Senin, ...
+                        DB::raw('SUM(calories_burned) as total_calories')
+                    ])->pluck('total_calories', 'day');
+
+                $days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                for ($i = 0; $i < 7; $i++) {
+                    $dayOfWeek = now()->startOfWeek()->addDays($i)->dayOfWeek; // 0=Minggu, 1=Senin
+                    $dayKey = $dayOfWeek + 1; // Sesuaikan dengan DAYOFWEEK
+                    $chartLabels[] = $days[$dayOfWeek];
+                    $chartValues[] = $chartData[$dayKey] ?? 0;
+                }
+                break;
+        }
+
+        // --- RIWAYAT TERAKHIR ---
+        $recentHistories = CalculationHistory::where('user_id', $user->id)->latest()->take(5)->get();
 
         return view('dashboard', [
             'stats' => $stats,
             'recentHistories' => $recentHistories,
             'period' => $period,
+            'favoriteSport' => $favoriteSport,
+            'topActivity' => $topActivity,
+            'chartTitle' => $chartTitle,
+            'chartLabels' => $chartLabels,
+            'chartValues' => $chartValues,
         ]);
     }
 
@@ -66,6 +153,7 @@ class CalorieController extends Controller
             'sport_id' => 'required|exists:sports,id',
             'duration' => 'required|numeric|min:1',
             'weight' => 'required|numeric|min:1',
+            'activity_time' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -76,6 +164,8 @@ class CalorieController extends Controller
         $duration = $request->duration;
         $weight = $request->weight;
 
+        $activityTime = $request->filled('activity_time') ? Carbon::parse($request->activity_time) : now();
+
         $caloriesBurned = ($sport->met_value * $weight * 3.5) / 200 * $duration;
 
         if (Auth::check()) {
@@ -85,6 +175,8 @@ class CalorieController extends Controller
                 'duration_minutes' => $duration,
                 'weight_kg' => $weight,
                 'calories_burned' => round($caloriesBurned, 2),
+                'created_at' => $activityTime,
+                'updated_at' => $activityTime,
             ]);
         }
 
@@ -96,15 +188,10 @@ class CalorieController extends Controller
         ]);
     }
 
-    /**
-     * Menampilkan halaman riwayat dengan logika filter.
-     */
     public function history(Request $request)
     {
-        // Ambil query builder dasar
         $query = CalculationHistory::where('user_id', Auth::id());
 
-        // Terapkan filter jika ada
         if ($request->filled('sport_name')) {
             $query->where('sport_name', $request->sport_name);
         }
@@ -114,31 +201,23 @@ class CalorieController extends Controller
         }
 
         $histories = $query->latest()->paginate(10)->withQueryString();
-
-        // Ambil daftar olahraga unik untuk dropdown filter dan urutkan
         $sports = Sport::orderBy('name', 'asc')->get();
 
         return view('history', compact('histories', 'sports'));
     }
 
-    /**
-     * Mengunduh PDF dengan logika filter yang sama.
-     */
     public function downloadHistoryPdf(Request $request)
     {
         $query = CalculationHistory::where('user_id', Auth::id());
 
-        // Terapkan filter yang sama seperti di halaman history
         if ($request->filled('sport_name')) {
             $query->where('sport_name', $request->sport_name);
         }
-
         if ($request->filled('date')) {
             $query->whereDate('created_at', $request->date);
         }
 
         $histories = $query->latest()->get();
-
         $data = [
             'title' => 'Riwayat Perhitungan Kalori',
             'date' => date('d/m/Y'),
@@ -146,7 +225,21 @@ class CalorieController extends Controller
         ];
 
         $pdf = PDF::loadView('history_pdf', $data);
-
         return $pdf->download('riwayat-kalori-' . Auth::user()->name . '.pdf');
+    }
+
+    /**
+     * Menghapus entri riwayat tertentu.
+     */
+    public function destroyHistory(CalculationHistory $history)
+    {
+        // Pastikan pengguna yang login adalah pemilik riwayat ini
+        if (Auth::id() !== $history->user_id) {
+            abort(403, 'AKSI TIDAK DIIZINKAN.');
+        }
+
+        $history->delete();
+
+        return back()->with('status', 'Riwayat berhasil dihapus!');
     }
 }

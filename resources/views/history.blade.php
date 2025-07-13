@@ -3,6 +3,24 @@
 @section('title', 'Riwayat Perhitungan')
 
 @section('content')
+    {{-- Notifikasi Sukses (Toast) yang Disempurnakan --}}
+    @if (session('status'))
+        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-4"
+            x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-4"
+            class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center bg-green-500 text-white py-2 px-5 rounded-full shadow-lg"
+            role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ session('status') }}</span>
+        </div>
+    @endif
+
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
             <h1 class="text-4xl font-bold text-gray-800">Riwayat Perhitungan</h1>
@@ -67,11 +85,13 @@
                         <th class="p-4 text-sm font-semibold text-gray-600">Berat (Kg)</th>
                         <th class="p-4 text-sm font-semibold text-gray-600">Kalori Terbakar</th>
                         <th class="p-4 text-sm font-semibold text-gray-600">Tanggal</th>
+                        <th class="p-4 text-sm font-semibold text-gray-600 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($histories as $history)
-                        <tr class="hover:bg-orange-50 transition duration-200 border-b border-gray-200">
+                        <tr x-data="{ modalOpen: false }"
+                            class="hover:bg-orange-50 transition duration-200 border-b border-gray-200">
                             <td class="p-4 text-gray-700 w-16">
                                 {{ ($histories->currentPage() - 1) * $histories->perPage() + $loop->iteration }}.</td>
                             <td class="p-4 text-gray-700">{{ $history->sport_name }}</td>
@@ -82,10 +102,48 @@
                             <td class="p-4 text-sm text-gray-500">
                                 {{ $history->created_at->translatedFormat('d F Y, H:i') }}
                             </td>
+                            <td class="p-4 text-center">
+                                {{-- Tombol Hapus Baru dengan Gaya yang Disempurnakan --}}
+                                <button @click="modalOpen = true"
+                                    class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow-md hover:bg-red-700 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Hapus
+                                </button>
+
+                                <!-- Modal Konfirmasi Hapus -->
+                                <div x-show="modalOpen" x-cloak
+                                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                                    @keydown.escape.window="modalOpen = false">
+                                    <div @click.away="modalOpen = false"
+                                        class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                                        <h2 class="text-lg font-bold text-gray-900">Konfirmasi Hapus</h2>
+                                        <p class="mt-2 text-sm text-gray-600">Apakah Anda yakin ingin menghapus riwayat ini?
+                                            Aksi ini tidak dapat dibatalkan.</p>
+                                        <div class="mt-6 flex justify-end space-x-3">
+                                            <form method="POST" action="{{ route('history.destroy', $history->id) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700">
+                                                    Ya, Hapus
+                                                </button>
+                                            </form>
+                                            <button @click="modalOpen = false" type="button"
+                                                class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300">
+                                                Batal
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-12 text-gray-500">
+                            <td colspan="7" class="text-center py-12 text-gray-500">
                                 Belum ada riwayat perhitungan.
                             </td>
                         </tr>
