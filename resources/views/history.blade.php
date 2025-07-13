@@ -79,7 +79,9 @@
                             <td class="p-4 text-gray-700">{{ $history->weight_kg }}</td>
                             <td class="p-4 text-orange-600 font-bold">{{ number_format($history->calories_burned, 2) }}
                             </td>
-                            <td class="p-4 text-sm text-gray-500">{{ $history->created_at->format('d M Y, H:i') }}</td>
+                            <td class="p-4 text-sm text-gray-500">
+                                {{ $history->created_at->translatedFormat('d F Y, H:i') }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
@@ -93,7 +95,6 @@
         </div>
     </div>
 
-    {{-- Menggunakan pagination kustom --}}
     <div class="mt-6">
         {{ $histories->links('vendor.pagination.custom-pagination') }}
     </div>
