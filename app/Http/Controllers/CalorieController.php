@@ -15,7 +15,8 @@ class CalorieController extends Controller
 {
     public function index()
     {
-        $sports = Sport::all();
+        // Mengambil data olahraga dan mengurutkannya berdasarkan nama
+        $sports = Sport::orderBy('name', 'asc')->get();
         return view('calculator', compact('sports'));
     }
 
@@ -114,8 +115,8 @@ class CalorieController extends Controller
 
         $histories = $query->latest()->paginate(10)->withQueryString();
 
-        // Ambil daftar olahraga unik untuk dropdown filter
-        $sports = Sport::orderBy('name')->get();
+        // Ambil daftar olahraga unik untuk dropdown filter dan urutkan
+        $sports = Sport::orderBy('name', 'asc')->get();
 
         return view('history', compact('histories', 'sports'));
     }

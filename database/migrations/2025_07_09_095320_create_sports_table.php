@@ -12,8 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->float('met_value');
-            // MENGGANTI image_url DENGAN icon_svg
-            $table->text('icon_svg')->nullable(); // Menggunakan TEXT untuk kode SVG
+            $table->string('image_url')->nullable(); 
             $table->timestamps();
         });
     }

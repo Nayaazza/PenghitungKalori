@@ -12,6 +12,6 @@ class Sport extends Model
     protected $fillable = [
         'name',
         'met_value',
-        'icon_svg',
+        'image_url',
     ];
 }

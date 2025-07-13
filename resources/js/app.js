@@ -1,20 +1,18 @@
 import './bootstrap';
-import Alpine from 'alpinejs';
-import $ from 'jquery';
-import { initCalculator } from './calculator.js';
 
+// Import Alpine.js untuk komponen interaktif Laravel Breeze
+import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 Alpine.start();
-window.$ = $;
 
+// Import jQuery
+import $ from 'jquery';
+window.$ = window.jQuery = $;
+
+// Import dan jalankan skrip kalkulator kita
+import { initCalculator } from './calculator.js';
+
+// Pastikan DOM sudah siap sebelum menjalankan skrip
 $(document).ready(function() {
     initCalculator();
-
-    if ($("#mobile-menu-button").length) {
-        $("#mobile-menu-button").on("click", function () {
-            $("#mobile-menu").slideToggle(300);
-            $("#menu-icon").toggleClass("hidden");
-            $("#close-icon").toggleClass("hidden");
-        });
-    }
 });
